@@ -35,7 +35,7 @@ on:
 permissions: {}
 
 env:
-  BUILDER_IMAGE: ghcr.io/mwdavisii/golden-road-builder@sha256:953d29ad44956760e385c4a3be09e21053df1dada371062251640ebc64189c2a
+  BUILDER_IMAGE: ghcr.io/mwdavisii/golden-road-builder@sha256:c28841e393d4b3237e73a258ff9836ef6ee2c09c3ed6b9d8b18301463294f999
   # app: the deploy App's token opens the pull requests. configure.py --bump-workflow-token sets workflow, for the personal PoC only:
   # this workflow's own token, with the job's permissions rewritten to write, and a dispatch of deploy-check after each pull request.
   BUMP_TOKEN: workflow
@@ -275,6 +275,8 @@ jobs:
               continue
             fi
             # --unchanged-binding: a pin never changes bindings.yaml, so a moved MCP gateway is a warning here, not a refusal
+            # A suspended environment's lifecycle.yaml is read by compose, so a pin keeps replicas: 0 (spec 2026-11-02 rule 5); bump
+            # never writes or removes it.
             if ! gr golden-road compose --root /deploy --expect-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" --unchanged-binding "$env_path" > out/compose.json; then
               skip "$env_path: golden-road compose refused $tag (the error is above)"
               continue
